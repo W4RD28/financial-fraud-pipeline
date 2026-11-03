@@ -1,0 +1,64 @@
+### Build Tools & Outputs ###
+target/
+build/
+out/
+bin/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### Keep Maven/Gradle Wrappers (Exception to the .jar rule) ###
+!.mvn/wrapper/maven-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+### Build Tool Specifics ###
+.gradle/
+buildNumber.properties
+.mvn/timing.properties
+dependency-reduced-pom.xml
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Eclipse / Spring Tool Suite (STS) ###
+.metadata/
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+.factorypath
+.apt_generated/
+*.launch
+
+### Visual Studio Code ###
+.vscode/
+
+### Logs & Temp Files ###
+*.log
+logs/
+*.swp
+*.tmp
+*.bak
+*~
+hs_err_pid*
+
+### Secrets & Local Environment Configs ###
+.env
+*.properties.local
+*.yml.local
+secrets.yml
+
+### Operating System Files ###
+.DS_Store
+Thumbs.db
+Desktop.ini
