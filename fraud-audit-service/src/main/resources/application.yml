@@ -34,12 +34,16 @@ spring:
       group-id: ${KAFKA_CONSUMER_GROUP:fraud-audit-group}
       auto-offset-reset: earliest
       enable-auto-commit: false
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
         spring.json.trusted.packages: "com.fraud.*"
+        spring.json.value.default.type: com.fraud.common.dto.FraudAlertEvent
     listener:
       ack-mode: MANUAL_IMMEDIATE
+      concurrency: 3
 
 management:
   endpoints:
