@@ -1,5 +1,7 @@
 package com.fraud.audit.config;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,9 +14,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableKafka
@@ -32,19 +31,16 @@ public class KafkaConsumerConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        
+
         // Disable auto-commit to guarantee database transaction alignment
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         // Safe JSON Deserializer setup
-        ErrorHandlingDeserializer<Object> errorHandlingDeserializer = 
+        ErrorHandlingDeserializer<Object> errorHandlingDeserializer =
                 new ErrorHandlingDeserializer<>(new JsonDeserializer<>(Object.class, false));
 
         return new DefaultKafkaConsumerFactory<>(
-                props, 
-                new StringDeserializer(), 
-                errorHandlingDeserializer
-        );
+                props, new StringDeserializer(), errorHandlingDeserializer);
     }
 
     @Bean

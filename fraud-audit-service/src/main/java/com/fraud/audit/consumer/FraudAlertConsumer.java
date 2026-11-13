@@ -9,9 +9,8 @@ import org.springframework.stereotype.Component;
 public class FraudAlertConsumer {
 
     @KafkaListener(
-        topics = "${app.kafka.topics.fraud-alerts:fraud-alerts}",
-        groupId = "${spring.kafka.consumer.group-id:fraud-audit-group}"
-    )
+            topics = "${app.kafka.topics.fraud-alerts:fraud-alerts}",
+            groupId = "${spring.kafka.consumer.group-id:fraud-audit-group}")
     public void onFraudAlert(ConsumerRecord<String, String> record, Acknowledgment ack) {
         try {
             System.out.println("Audit Service Received Fraud Alert: " + record.value());
