@@ -26,6 +26,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default-schema: gateway
+
+  flyway:
+    enabled: true
+    schemas: gateway
+    default-schema: gateway
+    create-schemas: true
+    locations: classpath:db/migration
 
   # Kafka Configuration
   kafka:

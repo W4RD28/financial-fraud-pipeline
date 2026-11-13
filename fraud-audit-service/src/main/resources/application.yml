@@ -26,6 +26,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default-schema: audit
+
+  flyway:
+    enabled: true
+    schemas: audit
+    default-schema: audit
+    create-schemas: true
+    locations: classpath:db/migration
 
   # Kafka Consumer Configuration
   kafka:
