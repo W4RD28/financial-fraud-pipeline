@@ -11,7 +11,7 @@ spring:
 
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}?currentSchema=gateway
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgrespassword}
     driver-class-name: org.postgresql.Driver

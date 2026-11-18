@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "transactions")
@@ -24,7 +26,8 @@ public class TransactionEntity {
     @Column(name = "amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @Column(name = "currency", nullable = false, length = 3, columnDefinition = "CHAR(3)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
     @Column(name = "merchant_category_code", nullable = false, length = 16)
