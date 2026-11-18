@@ -20,6 +20,7 @@
     <module>transaction-gateway-service</module>
     <module>fraud-detection-engine</module>
     <module>fraud-audit-service</module>
+    <module>api-gateway</module>
   </modules>
 
   <properties>

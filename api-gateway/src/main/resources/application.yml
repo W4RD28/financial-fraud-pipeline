@@ -1,0 +1,88 @@
+server:
+  port: ${API_GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+
+  threads:
+    virtual:
+      enabled: true
+
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}?schema=edge
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgrespassword}
+    pool:
+      initial-size: 5
+      max-size: 15
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}
+    user: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgrespassword}
+    schemas: edge
+    default-schema: edge
+    create-schemas: true
+    locations: classpath:db/migration
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              "[/**]":
+                allowedOriginPatterns: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+                exposedHeaders:
+                  - X-Request-Id
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          routes:
+            - id: transaction-gateway-route
+              uri: ${TRANSACTION_GATEWAY_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/transactions/**
+
+            - id: transaction-gateway-docs
+              uri: ${TRANSACTION_GATEWAY_URL:http://localhost:8081}
+              predicates:
+                - Path=/transaction-gateway/v3/api-docs
+              filters:
+                - RewritePath=/transaction-gateway/(?<path>.*), /$\{path}
+
+            - id: fraud-audit-route
+              uri: ${FRAUD_AUDIT_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/fraud-alerts/**
+
+            - id: fraud-audit-docs
+              uri: ${FRAUD_AUDIT_URL:http://localhost:8082}
+              predicates:
+                - Path=/fraud-audit/v3/api-docs
+              filters:
+                - RewritePath=/fraud-audit/(?<path>.*), /$\{path}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Transaction Gateway Service
+        url: /transaction-gateway/v3/api-docs
+      # - name: Fraud Audit Service
+      #   url: /fraud-audit/v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
