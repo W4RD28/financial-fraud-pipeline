@@ -13,13 +13,16 @@ import org.springframework.stereotype.Repository;
 public interface TransactionOutboxRepository extends JpaRepository<TransactionOutboxEntity, UUID> {
   List<TransactionOutboxEntity> findTop100ByStatusOrderByCreatedAtAsc(OutboxStatus status);
 
-  @Query(value = """
+  @Query(
+      value =
+          """
       SELECT *
       FROM transaction_outbox
       WHERE status = 'PENDING'
       ORDER BY created_at ASC
       LIMIT :batchSize
       FOR UPDATE SKIP LOCKED
-      """, nativeQuery = true)
+      """,
+      nativeQuery = true)
   List<TransactionOutboxEntity> findPendingBatchForUpdate(@Param("batchSize") int batchSize);
 }

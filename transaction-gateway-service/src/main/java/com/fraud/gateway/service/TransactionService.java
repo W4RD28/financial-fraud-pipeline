@@ -25,88 +25,86 @@ import tools.jackson.databind.ObjectMapper;
 @Slf4j
 public class TransactionService {
 
-    private final TransactionRepository transactionRepository;
-    private final TransactionOutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
+  private final TransactionRepository transactionRepository;
+  private final TransactionOutboxRepository outboxRepository;
+  private final ObjectMapper objectMapper;
 
-    @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
-    private String rawTransactionsTopic;
+  @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
+  private String rawTransactionsTopic;
 
-    @Transactional
-    public TransactionResponse ingestTransaction(CreateTransactionRequest request) {
-        String txId =
-                (request.transactionId() != null && !request.transactionId().isBlank())
-                        ? request.transactionId()
-                        : UUID.randomUUID().toString();
+  @Transactional
+  public TransactionResponse ingestTransaction(CreateTransactionRequest request) {
+    String txId =
+        (request.transactionId() != null && !request.transactionId().isBlank())
+            ? request.transactionId()
+            : UUID.randomUUID().toString();
 
-        if (transactionRepository.existsById(txId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "Transaction already exists: " + txId);
-        }
-
-        Instant occurredAt = request.occurredAt() != null ? request.occurredAt() : Instant.now();
-
-        TransactionEntity entity =
-                TransactionEntity.builder()
-                        .transactionId(txId)
-                        .accountId(request.accountId())
-                        .amount(request.amount())
-                        .currency(request.currency())
-                        .merchantCategoryCode(request.merchantCategoryCode())
-                        .occurredAt(occurredAt)
-                        .build();
-
-        TransactionEntity saved = transactionRepository.save(entity);
-
-        // Stage event in transaction_outbox for reliable Kafka publishing
-        TransactionEvent event =
-                new TransactionEvent(
-                        saved.getTransactionId(),
-                        saved.getAccountId(),
-                        saved.getAmount(),
-                        saved.getCurrency(),
-                        saved.getMerchantCategoryCode(),
-                        saved.getOccurredAt());
-
-        TransactionOutboxEntity outbox =
-                TransactionOutboxEntity.builder()
-                        .transactionId(saved.getTransactionId())
-                        .topic(rawTransactionsTopic)
-                        .payload(objectMapper.writeValueAsString(event))
-                        .status(OutboxStatus.PENDING)
-                        .build();
-
-        outboxRepository.save(outbox);
-
-        log.info(
-                "Persisted transaction {} for account {} (amount: {} {})",
-                saved.getTransactionId(),
-                saved.getAccountId(),
-                saved.getAmount(),
-                saved.getCurrency());
-
-        // TODO: publish 'event' to Kafka topic 'raw-transactions' and mark outbox
-        // PUBLISHED
-
-        return TransactionResponse.fromEntity(saved);
+    if (transactionRepository.existsById(txId)) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Transaction already exists: " + txId);
     }
 
-    @Transactional(readOnly = true)
-    public TransactionResponse getById(String transactionId) {
-        return transactionRepository
-                .findById(transactionId)
-                .map(TransactionResponse::fromEntity)
-                .orElseThrow(
-                        () ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Transaction not found: " + transactionId));
-    }
+    Instant occurredAt = request.occurredAt() != null ? request.occurredAt() : Instant.now();
 
-    @Transactional(readOnly = true)
-    public List<TransactionResponse> getByAccountId(String accountId) {
-        return transactionRepository.findByAccountIdOrderByOccurredAtDesc(accountId).stream()
-                .map(TransactionResponse::fromEntity)
-                .toList();
-    }
+    TransactionEntity entity =
+        TransactionEntity.builder()
+            .transactionId(txId)
+            .accountId(request.accountId())
+            .amount(request.amount())
+            .currency(request.currency())
+            .merchantCategoryCode(request.merchantCategoryCode())
+            .occurredAt(occurredAt)
+            .build();
+
+    TransactionEntity saved = transactionRepository.save(entity);
+
+    // Stage event in transaction_outbox for reliable Kafka publishing
+    TransactionEvent event =
+        new TransactionEvent(
+            saved.getTransactionId(),
+            saved.getAccountId(),
+            saved.getAmount(),
+            saved.getCurrency(),
+            saved.getMerchantCategoryCode(),
+            saved.getOccurredAt());
+
+    TransactionOutboxEntity outbox =
+        TransactionOutboxEntity.builder()
+            .transactionId(saved.getTransactionId())
+            .topic(rawTransactionsTopic)
+            .payload(objectMapper.writeValueAsString(event))
+            .status(OutboxStatus.PENDING)
+            .build();
+
+    outboxRepository.save(outbox);
+
+    log.info(
+        "Persisted transaction {} for account {} (amount: {} {})",
+        saved.getTransactionId(),
+        saved.getAccountId(),
+        saved.getAmount(),
+        saved.getCurrency());
+
+    // TODO: publish 'event' to Kafka topic 'raw-transactions' and mark outbox
+    // PUBLISHED
+
+    return TransactionResponse.fromEntity(saved);
+  }
+
+  @Transactional(readOnly = true)
+  public TransactionResponse getById(String transactionId) {
+    return transactionRepository
+        .findById(transactionId)
+        .map(TransactionResponse::fromEntity)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Transaction not found: " + transactionId));
+  }
+
+  @Transactional(readOnly = true)
+  public List<TransactionResponse> getByAccountId(String accountId) {
+    return transactionRepository.findByAccountIdOrderByOccurredAtDesc(accountId).stream()
+        .map(TransactionResponse::fromEntity)
+        .toList();
+  }
 }

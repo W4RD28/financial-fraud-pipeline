@@ -11,16 +11,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class VelocityCheckTopology {
 
-    @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
-    private String inputTopic;
+  @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
+  private String inputTopic;
 
-    @Value("${app.kafka.topics.fraud-alerts:fraud-alerts}")
-    private String outputTopic;
+  @Value("${app.kafka.topics.fraud-alerts:fraud-alerts}")
+  private String outputTopic;
 
-    @Autowired
-    public void buildPipeline(StreamsBuilder builder) {
-        builder.stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String()))
-                // .peek((key, value) -> log.info("Processing event: {}", value))
-                .to(outputTopic, Produced.with(Serdes.String(), Serdes.String()));
-    }
+  @Autowired
+  public void buildPipeline(StreamsBuilder builder) {
+    builder.stream(inputTopic, Consumed.with(Serdes.String(), Serdes.String()))
+        // .peek((key, value) -> log.info("Processing event: {}", value))
+        .to(outputTopic, Produced.with(Serdes.String(), Serdes.String()));
+  }
 }

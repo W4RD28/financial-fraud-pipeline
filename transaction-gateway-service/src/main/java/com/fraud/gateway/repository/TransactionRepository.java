@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, String> {
-    List<TransactionEntity> findByAccountIdOrderByOccurredAtDesc(String accountId);
+  List<TransactionEntity> findByAccountIdOrderByOccurredAtDesc(String accountId);
 }

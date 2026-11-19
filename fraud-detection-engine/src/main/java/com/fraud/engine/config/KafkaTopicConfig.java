@@ -11,19 +11,19 @@ import org.springframework.kafka.config.TopicBuilder;
 @Profile("!prod")
 public class KafkaTopicConfig {
 
-    @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
-    private String rawTransactionsTopic;
+  @Value("${app.kafka.topics.raw-transactions:raw-transactions}")
+  private String rawTransactionsTopic;
 
-    @Value("${app.kafka.topics.fraud-alerts:fraud-alerts}")
-    private String fraudAlertsTopic;
+  @Value("${app.kafka.topics.fraud-alerts:fraud-alerts}")
+  private String fraudAlertsTopic;
 
-    @Bean
-    public NewTopic rawTransactionsTopic() {
-        return TopicBuilder.name(rawTransactionsTopic).partitions(3).replicas(1).build();
-    }
+  @Bean
+  public NewTopic rawTransactionsTopic() {
+    return TopicBuilder.name(rawTransactionsTopic).partitions(3).replicas(1).build();
+  }
 
-    @Bean
-    public NewTopic fraudAlertsTopic() {
-        return TopicBuilder.name(fraudAlertsTopic).partitions(3).replicas(1).build();
-    }
+  @Bean
+  public NewTopic fraudAlertsTopic() {
+    return TopicBuilder.name(fraudAlertsTopic).partitions(3).replicas(1).build();
+  }
 }

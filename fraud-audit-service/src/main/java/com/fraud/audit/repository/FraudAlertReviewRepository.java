@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FraudAlertReviewRepository extends JpaRepository<FraudAlertReviewEntity, Long> {
-    List<FraudAlertReviewEntity> findByAlert_AlertIdOrderByReviewedAtAsc(String alertId);
+  List<FraudAlertReviewEntity> findByAlert_AlertIdOrderByReviewedAtAsc(String alertId);
 }

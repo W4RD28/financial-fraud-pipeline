@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 @EnableKafka
 public class FraudAuditServiceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(FraudAuditServiceApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(FraudAuditServiceApplication.class, args);
+  }
 }

@@ -63,7 +63,7 @@
               <removeUnusedImports/>
               <googleJavaFormat>
                 <version>1.28.0</version>
-                <style>AOSP</style>
+                <style>GOOGLE</style>
               </googleJavaFormat>
               <formatAnnotations/>
               <trimTrailingWhitespace/>

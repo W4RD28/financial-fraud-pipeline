@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FraudAlertRepository extends JpaRepository<FraudAlertEntity, String> {
-    List<FraudAlertEntity> findByAccountIdOrderByDetectedAtDesc(String accountId);
+  List<FraudAlertEntity> findByAccountIdOrderByDetectedAtDesc(String accountId);
 
-    List<FraudAlertEntity> findByStatusOrderByDetectedAtDesc(AlertStatus status);
+  List<FraudAlertEntity> findByStatusOrderByDetectedAtDesc(AlertStatus status);
 
-    Optional<FraudAlertEntity> findByTransactionId(String transactionId);
+  Optional<FraudAlertEntity> findByTransactionId(String transactionId);
 
-    boolean existsByAlertId(String alertId);
+  boolean existsByAlertId(String alertId);
 }

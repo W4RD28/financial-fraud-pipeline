@@ -33,7 +33,8 @@ public class OutboxPublisher {
   @Scheduled(fixedDelayString = "${app.outbox.poll-interval-ms:500}")
   @Transactional
   public void publishPendingEvents() {
-    List<TransactionOutboxEntity> pendingBatch = outboxRepository.findPendingBatchForUpdate(BATCH_SIZE);
+    List<TransactionOutboxEntity> pendingBatch =
+        outboxRepository.findPendingBatchForUpdate(BATCH_SIZE);
 
     if (pendingBatch.isEmpty()) {
       return;
@@ -45,17 +46,12 @@ public class OutboxPublisher {
 
         // Use accountId as key so all transactions for an account land on the same
         // partition
-        kafkaTemplate
-            .send(rawTransactionsTopic, event.accountId(), event)
-            .get(5, TimeUnit.SECONDS);
+        kafkaTemplate.send(rawTransactionsTopic, event.accountId(), event).get(5, TimeUnit.SECONDS);
 
         entry.setStatus(OutboxStatus.PUBLISHED);
         entry.setPublishedAt(Instant.now());
       } catch (Exception ex) {
-        log.error(
-            "Failed to publish outbox event {} (aggregateId={}): {}",
-            entry,
-            ex.getMessage());
+        log.error("Failed to publish outbox event {} (aggregateId={}): {}", entry, ex.getMessage());
       }
     }
 

@@ -15,25 +15,22 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 @EnableKafkaStreams
 public class KafkaStreamsConfig {
 
-    @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
-    private String bootstrapServers;
+  @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
+  private String bootstrapServers;
 
-    @Value("${spring.application.name:fraud-detection-engine}")
-    private String applicationName;
+  @Value("${spring.application.name:fraud-detection-engine}")
+  private String applicationName;
 
-    @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
-    public KafkaStreamsConfiguration kStreamsConfig() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationName);
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(
-                StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        props.put(
-                StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,
-                Serdes.String().getClass().getName());
-        props.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
-        props.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
+  @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
+  public KafkaStreamsConfiguration kStreamsConfig() {
+    Map<String, Object> props = new HashMap<>();
+    props.put(StreamsConfig.APPLICATION_ID_CONFIG, applicationName);
+    props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+    props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+    props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+    props.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE_V2);
+    props.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 
-        return new KafkaStreamsConfiguration(props);
-    }
+    return new KafkaStreamsConfiguration(props);
+  }
 }
