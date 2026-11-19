@@ -18,12 +18,16 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     streams:
-      application-id: ${KAFKA_STREAMS_APP_ID:fraud-detection-engine-group}
+      application-id: ${KAFKA_STREAMS_APP_ID:fraud-detection-engine-streams}
       properties:
-        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerdeClass
-        default.value.serde: org.springframework.kafka.support.serializer.JsonSerde
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.springframework.kafka.support.serializer.JacksonJsonSerde
+        commit.interval.ms: 1000
         processing.guarantee: exactly_once_v2
-        state.dir: /tmp/kafka-streams
+        replication.factor: 1
+        transaction.state.log.replication.factor: 1
+        transaction.state.log.min.isr: 1
+        state.dir: /tmp/kafka-streams/fraud-detection-engine
 
 management:
   endpoints:
@@ -39,3 +43,7 @@ app:
     topics:
       raw-transactions: ${KAFKA_TOPIC_RAW:raw-transactions}
       fraud-alerts: ${KAFKA_TOPIC_ALERTS:fraud-alerts}
+  fraud:
+    velocity-window-seconds: 60
+    max-transactions-per-window: 3
+    high-value-threshold: 5000.00
