@@ -12,7 +12,7 @@ spring:
 
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:fraud_db}?currentSchema=audit
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgrespassword}
     driver-class-name: org.postgresql.Driver
@@ -42,16 +42,15 @@ spring:
     consumer:
       group-id: ${KAFKA_CONSUMER_GROUP:fraud-audit-group}
       auto-offset-reset: earliest
-      enable-auto-commit: false
       key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
         spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
-        spring.json.trusted.packages: "com.fraud.*"
+        spring.json.trusted.packages: "com.fraud.common.dto"
         spring.json.value.default.type: com.fraud.common.dto.FraudAlertEvent
     listener:
-      ack-mode: MANUAL_IMMEDIATE
+      ack-mode: RECORD
       concurrency: 3
 
 management:

@@ -78,8 +78,8 @@ springdoc:
     urls:
       - name: Transaction Gateway Service
         url: /transaction-gateway/v3/api-docs
-      # - name: Fraud Audit Service
-      #   url: /fraud-audit/v3/api-docs
+      - name: Fraud Audit Service
+        url: /fraud-audit/v3/api-docs
 
 management:
   endpoints:
