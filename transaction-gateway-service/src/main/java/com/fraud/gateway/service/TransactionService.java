@@ -36,26 +36,15 @@ public class TransactionService {
 
   @Transactional
   public TransactionResponse ingestTransaction(CreateTransactionRequest request) {
-    String txId =
-        (request.transactionId() != null && !request.transactionId().isBlank())
-            ? request.transactionId()
-            : UUID.randomUUID().toString();
-
-    if (transactionRepository.existsById(txId)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Transaction already exists: " + txId);
-    }
-
-    Instant occurredAt = request.occurredAt() != null ? request.occurredAt() : Instant.now();
-
     TransactionEntity entity =
         TransactionEntity.builder()
-            .transactionId(txId)
+            .transactionId(UUID.randomUUID().toString())
             .accountId(request.accountId())
             .amount(request.amount())
             .currency(request.currency())
             .merchantCategoryCode(request.merchantCategoryCode())
             .status(TransactionDecisionStatus.PENDING_REVIEW)
-            .occurredAt(occurredAt)
+            .occurredAt(Instant.now())
             .build();
 
     TransactionEntity saved = transactionRepository.save(entity);
