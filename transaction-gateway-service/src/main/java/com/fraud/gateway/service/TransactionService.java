@@ -1,5 +1,6 @@
 package com.fraud.gateway.service;
 
+import com.fraud.common.dto.event.TransactionDecisionStatus;
 import com.fraud.common.dto.event.TransactionEvent;
 import com.fraud.gateway.domain.OutboxStatus;
 import com.fraud.gateway.domain.TransactionEntity;
@@ -53,6 +54,7 @@ public class TransactionService {
             .amount(request.amount())
             .currency(request.currency())
             .merchantCategoryCode(request.merchantCategoryCode())
+            .status(TransactionDecisionStatus.PENDING_REVIEW)
             .occurredAt(occurredAt)
             .build();
 
@@ -79,9 +81,10 @@ public class TransactionService {
     outboxRepository.save(outbox);
 
     log.info(
-        "Persisted transaction {} for account {} (amount: {} {})",
+        "Persisted transaction {} for account {} with status {} (amount: {} {})",
         saved.getTransactionId(),
         saved.getAccountId(),
+        saved.getStatus(),
         saved.getAmount(),
         saved.getCurrency());
 

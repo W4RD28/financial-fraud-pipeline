@@ -72,6 +72,7 @@ services:
       - |
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:${KAFKA_PORT:-9092} --create --if-not-exists --topic raw-transactions --partitions 3 --replication-factor 1
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:${KAFKA_PORT:-9092} --create --if-not-exists --topic fraud-alerts --partitions 3 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:${KAFKA_PORT:-9092} --create --if-not-exists --topic transaction-decisions --partitions 3 --replication-factor 1
         /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:${KAFKA_PORT:-9092} --list
 
   prometheus:

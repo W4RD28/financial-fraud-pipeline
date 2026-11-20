@@ -43,6 +43,16 @@ spring:
   # Kafka Configuration
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:transaction-gateway-group}
+      auto-offset-reset: earliest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+        spring.json.trusted.packages: "com.fraud.common.dto"
+        spring.json.value.default.type: com.fraud.common.dto.event.TransactionDecisionEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
@@ -50,6 +60,9 @@ spring:
       retries: 3
       properties:
         enable.idempotence: true
+    listener:
+      ack-mode: RECORD
+      concurrency: 3
 
 management:
   endpoints:
@@ -64,3 +77,4 @@ app:
   kafka:
     topics:
       raw-transactions: ${KAFKA_TOPIC_RAW:raw-transactions}
+      transaction-decisions: ${KAFKA_TOPIC_DECISIONS:transaction-decisions}

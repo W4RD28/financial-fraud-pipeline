@@ -44,6 +44,7 @@ app:
     topics:
       raw-transactions: ${KAFKA_TOPIC_RAW:raw-transactions}
       fraud-alerts: ${KAFKA_TOPIC_ALERTS:fraud-alerts}
+      transaction-decisions: ${KAFKA_TOPIC_DECISIONS:transaction-decisions}
   fraud:
     velocity-window-seconds: 60
     max-transactions-per-window: 3

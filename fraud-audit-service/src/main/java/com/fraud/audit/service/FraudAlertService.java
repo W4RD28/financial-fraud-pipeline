@@ -1,23 +1,36 @@
 package com.fraud.audit.service;
 
 import com.fraud.audit.domain.AlertStatus;
+import com.fraud.audit.domain.AuditOutboxEntity;
 import com.fraud.audit.domain.FraudAlertEntity;
 import com.fraud.audit.domain.FraudAlertReviewEntity;
 import com.fraud.audit.dto.FraudAlertResponse;
 import com.fraud.audit.dto.ReviewRequest;
+import com.fraud.audit.repository.AuditOutboxRepository;
 import com.fraud.audit.repository.FraudAlertRepository;
+import com.fraud.common.dto.event.TransactionDecisionEvent;
+import com.fraud.common.dto.event.TransactionDecisionStatus;
+import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
 public class FraudAlertService {
 
   private final FraudAlertRepository alertRepository;
+  private final AuditOutboxRepository auditOutboxRepository;
+  private final ObjectMapper objectMapper;
+
+  @Value("${app.kafka.topics.transaction-decisions:transaction-decisions}")
+  private String transactionDecisionsTopic;
 
   @Transactional(readOnly = true)
   public Page<FraudAlertResponse> listAlerts(
@@ -50,15 +63,17 @@ public class FraudAlertService {
         .map(
             alert -> {
               AlertStatus previousStatus = alert.getStatus();
+              String effectiveReviewer =
+                  request.reviewerId() != null && !request.reviewerId().isBlank()
+                      ? request.reviewerId()
+                      : "system-analyst";
+
               alert.setStatus(request.status());
 
               FraudAlertReviewEntity review =
                   FraudAlertReviewEntity.builder()
                       .alert(alert)
-                      .reviewerId(
-                          request.reviewerId() != null && !request.reviewerId().isBlank()
-                              ? request.reviewerId()
-                              : "system-analyst")
+                      .reviewerId(effectiveReviewer)
                       .oldStatus(previousStatus)
                       .newStatus(request.status())
                       .notes(request.notes())
@@ -66,7 +81,59 @@ public class FraudAlertService {
 
               alert.getReviews().add(review);
               FraudAlertEntity saved = alertRepository.save(alert);
+
+              resolveOverrideDecision(request.status())
+                  .ifPresent(
+                      overrideStatus ->
+                          stageDecisionOutboxEvent(
+                              saved, overrideStatus, effectiveReviewer, request.notes()));
+
               return FraudAlertResponse.from(saved);
             });
+  }
+
+  private Optional<TransactionDecisionStatus> resolveOverrideDecision(AlertStatus status) {
+    return switch (status) {
+      case FALSE_POSITIVE -> Optional.of(TransactionDecisionStatus.OVERRIDDEN_APPROVED);
+      case CONFIRMED_FRAUD -> Optional.of(TransactionDecisionStatus.OVERRIDDEN_DECLINED);
+      default -> Optional.empty();
+    };
+  }
+
+  private void stageDecisionOutboxEvent(
+      FraudAlertEntity alert,
+      TransactionDecisionStatus overrideStatus,
+      String reviewerId,
+      String notes) {
+    TransactionDecisionEvent decisionEvent =
+        new TransactionDecisionEvent(
+            alert.getTransactionId(),
+            alert.getAccountId(),
+            overrideStatus,
+            null,
+            alert.getRuleTriggered(),
+            notes,
+            "ANALYST:" + reviewerId,
+            Instant.now());
+
+    AuditOutboxEntity outboxRecord =
+        AuditOutboxEntity.builder()
+            .aggregateId(alert.getTransactionId())
+            .topic(transactionDecisionsTopic)
+            .payload(serializeEvent(decisionEvent))
+            .status("PENDING")
+            .build();
+
+    auditOutboxRepository.save(outboxRecord);
+  }
+
+  private String serializeEvent(TransactionDecisionEvent event) {
+    try {
+      return objectMapper.writeValueAsString(event);
+    } catch (JacksonException e) {
+      throw new IllegalStateException(
+          "Failed to serialize TransactionDecisionEvent for transaction " + event.transactionId(),
+          e);
+    }
   }
 }
