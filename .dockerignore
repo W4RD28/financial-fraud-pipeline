@@ -1,0 +1,27 @@
+# Build outputs
+**/target/
+*.jar
+*.war
+*.ear
+
+# Version control & docs
+.git/
+.gitignore
+*.md
+docs/
+
+# IDE & OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+.classpath
+.project
+.settings/
+
+# Local environment & runtime logs
+.env
+.env.*
+!.env.example
+logs/
+*.log

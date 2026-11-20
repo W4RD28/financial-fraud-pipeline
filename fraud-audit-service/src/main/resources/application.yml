@@ -32,7 +32,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default-schema: audit
+        default_schema: audit
 
   flyway:
     enabled: true

@@ -2,40 +2,131 @@ services:
   transaction-gateway-service:
     build:
       context: .
-      dockerfile: transaction-gateway-service/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: transaction-gateway-service
     container_name: transaction-gateway-service
+    restart: unless-stopped
     ports:
-      - "${GATEWAY_SERVICE_PORT}:8081"
+      - "${GATEWAY_SERVICE_PORT:-8081}:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT}
-    networks:
-      - fraud-network
-
-  fraud-detection-engine:
-    build:
-      context: .
-      dockerfile: fraud-detection-engine/Dockerfile
-    container_name: fraud-detection-engine
-    ports:
-      - "${ENGINE_SERVICE_PORT}:8082"
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-fraud_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT:-29092}
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8081/actuator/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
     networks:
       - fraud-network
 
   fraud-audit-service:
     build:
       context: .
-      dockerfile: fraud-audit-service/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: fraud-audit-service
     container_name: fraud-audit-service
+    restart: unless-stopped
     ports:
-      - "${AUDIT_SERVICE_PORT}:8083"
+      - "${AUDIT_SERVICE_PORT:-8082}:8082"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-fraud_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT:-29092}
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8082/actuator/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
     networks:
       - fraud-network
+
+  fraud-detection-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: fraud-detection-engine
+    container_name: fraud-detection-engine
+    restart: unless-stopped
+    ports:
+      - "${ENGINE_SERVICE_PORT:-8083}:8083"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:${KAFKA_INTERNAL_PORT:-29092}
+      SPRING_KAFKA_STREAMS_STATE_DIR: /var/lib/kafka-streams/fraud-detection-engine
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    volumes:
+      - fraud_streams_state:/var/lib/kafka-streams/fraud-detection-engine
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8083/actuator/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+    networks:
+      - fraud-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_NAME: api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-fraud_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      TRANSACTION_GATEWAY_URL: http://transaction-gateway-service:8081
+      FRAUD_AUDIT_URL: http://fraud-audit-service:8082
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    depends_on:
+      transaction-gateway-service:
+        condition: service_healthy
+      fraud-audit-service:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:8080/actuator/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - fraud-network
+
+volumes:
+  fraud_streams_state:
 
 networks:
   fraud-network:
