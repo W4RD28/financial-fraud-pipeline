@@ -6,6 +6,7 @@ import com.fraud.engine.model.AccountWindowStats;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
@@ -22,6 +23,7 @@ import org.apache.kafka.streams.state.WindowStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 import org.springframework.kafka.support.serializer.JacksonJsonSerde;
 
 @Configuration
@@ -43,13 +45,21 @@ public class FraudTopologyConfig {
   @Value("${app.fraud.high-value-threshold:5000.00}")
   private BigDecimal highValueThreshold;
 
+  private <T> JacksonJsonSerde<T> jsonSerde(Class<T> targetType) {
+    JacksonJsonSerde<T> serde = new JacksonJsonSerde<>(targetType);
+    serde.configure(
+        Map.of(
+            JacksonJsonDeserializer.TRUSTED_PACKAGES,
+            "com.fraud.common.dto,com.fraud.engine.model"),
+        false);
+    return serde;
+  }
+
   @Bean
   public KStream<String, TransactionEvent> fraudDetectionTopology(StreamsBuilder builder) {
-    JacksonJsonSerde<TransactionEvent> transactionSerde =
-        new JacksonJsonSerde<>(TransactionEvent.class);
-    JacksonJsonSerde<AccountWindowStats> statsSerde =
-        new JacksonJsonSerde<>(AccountWindowStats.class);
-    JacksonJsonSerde<FraudAlertEvent> alertSerde = new JacksonJsonSerde<>(FraudAlertEvent.class);
+    JacksonJsonSerde<TransactionEvent> transactionSerde = jsonSerde(TransactionEvent.class);
+    JacksonJsonSerde<AccountWindowStats> statsSerde = jsonSerde(AccountWindowStats.class);
+    JacksonJsonSerde<FraudAlertEvent> alertSerde = jsonSerde(FraudAlertEvent.class);
 
     KStream<String, TransactionEvent> transactions =
         builder.stream(rawTransactionsTopic, Consumed.with(Serdes.String(), transactionSerde));

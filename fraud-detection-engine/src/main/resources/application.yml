@@ -28,6 +28,7 @@ spring:
         transaction.state.log.replication.factor: 1
         transaction.state.log.min.isr: 1
         state.dir: /tmp/kafka-streams/fraud-detection-engine
+        auto.offset.reset: earliest
 
 management:
   endpoints:
