@@ -6,6 +6,11 @@ spring:
   application:
     name: transaction-gateway-service
 
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+
   threads:
     virtual:
       enabled: true

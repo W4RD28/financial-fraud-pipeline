@@ -2,7 +2,7 @@ package com.fraud.audit.consumer;
 
 import com.fraud.audit.domain.FraudAlertEntity;
 import com.fraud.audit.repository.FraudAlertRepository;
-import com.fraud.common.dto.FraudAlertEvent;
+import com.fraud.common.dto.event.FraudAlertEvent;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

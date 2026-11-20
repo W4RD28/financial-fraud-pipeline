@@ -1,6 +1,6 @@
 package com.fraud.gateway.service;
 
-import com.fraud.common.dto.TransactionEvent;
+import com.fraud.common.dto.event.TransactionEvent;
 import com.fraud.gateway.domain.OutboxStatus;
 import com.fraud.gateway.domain.TransactionOutboxEntity;
 import com.fraud.gateway.repository.TransactionOutboxRepository;

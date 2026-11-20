@@ -6,6 +6,11 @@ spring:
   application:
     name: fraud-audit-service
 
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+
   threads:
     virtual:
       enabled: true
@@ -48,7 +53,7 @@ spring:
         spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
         spring.json.trusted.packages: "com.fraud.common.dto"
-        spring.json.value.default.type: com.fraud.common.dto.FraudAlertEvent
+        spring.json.value.default.type: com.fraud.common.dto.event.FraudAlertEvent
     listener:
       ack-mode: RECORD
       concurrency: 3

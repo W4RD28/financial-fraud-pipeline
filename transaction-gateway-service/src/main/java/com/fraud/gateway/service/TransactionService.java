@@ -1,6 +1,6 @@
 package com.fraud.gateway.service;
 
-import com.fraud.common.dto.TransactionEvent;
+import com.fraud.common.dto.event.TransactionEvent;
 import com.fraud.gateway.domain.OutboxStatus;
 import com.fraud.gateway.domain.TransactionEntity;
 import com.fraud.gateway.domain.TransactionOutboxEntity;
@@ -9,11 +9,12 @@ import com.fraud.gateway.dto.TransactionResponse;
 import com.fraud.gateway.repository.TransactionOutboxRepository;
 import com.fraud.gateway.repository.TransactionRepository;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,9 +85,6 @@ public class TransactionService {
         saved.getAmount(),
         saved.getCurrency());
 
-    // TODO: publish 'event' to Kafka topic 'raw-transactions' and mark outbox
-    // PUBLISHED
-
     return TransactionResponse.fromEntity(saved);
   }
 
@@ -102,9 +100,11 @@ public class TransactionService {
   }
 
   @Transactional(readOnly = true)
-  public List<TransactionResponse> getByAccountId(String accountId) {
-    return transactionRepository.findByAccountIdOrderByOccurredAtDesc(accountId).stream()
-        .map(TransactionResponse::fromEntity)
-        .toList();
+  public Page<TransactionResponse> listTransactions(String accountId, Pageable pageable) {
+    Page<TransactionEntity> page =
+        (accountId != null && !accountId.isBlank())
+            ? transactionRepository.findByAccountId(accountId, pageable)
+            : transactionRepository.findAll(pageable);
+    return page.map(TransactionResponse::fromEntity);
   }
 }

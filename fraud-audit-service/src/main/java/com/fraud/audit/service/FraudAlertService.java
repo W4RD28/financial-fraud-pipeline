@@ -6,9 +6,10 @@ import com.fraud.audit.domain.FraudAlertReviewEntity;
 import com.fraud.audit.dto.FraudAlertResponse;
 import com.fraud.audit.dto.ReviewRequest;
 import com.fraud.audit.repository.FraudAlertRepository;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +20,22 @@ public class FraudAlertService {
   private final FraudAlertRepository alertRepository;
 
   @Transactional(readOnly = true)
-  public List<FraudAlertResponse> listAlerts(String accountId, AlertStatus status) {
-    List<FraudAlertEntity> alerts;
-    if (accountId != null && !accountId.isBlank()) {
-      alerts = alertRepository.findByAccountIdOrderByDetectedAtDesc(accountId);
-    } else if (status != null) {
-      alerts = alertRepository.findByStatusOrderByDetectedAtDesc(status);
+  public Page<FraudAlertResponse> listAlerts(
+      String accountId, AlertStatus status, Pageable pageable) {
+    boolean hasAccount = accountId != null && !accountId.isBlank();
+    boolean hasStatus = status != null;
+
+    Page<FraudAlertEntity> page;
+    if (hasAccount && hasStatus) {
+      page = alertRepository.findByAccountIdAndStatus(accountId, status, pageable);
+    } else if (hasAccount) {
+      page = alertRepository.findByAccountId(accountId, pageable);
+    } else if (hasStatus) {
+      page = alertRepository.findByStatus(status, pageable);
     } else {
-      alerts = alertRepository.findAllByOrderByDetectedAtDesc();
+      page = alertRepository.findAll(pageable);
     }
-    return alerts.stream().map(FraudAlertResponse::from).toList();
+    return page.map(FraudAlertResponse::from);
   }
 
   @Transactional(readOnly = true)

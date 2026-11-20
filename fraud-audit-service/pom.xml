@@ -72,6 +72,14 @@
       <artifactId>logstash-logback-encoder</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <version>4.1.2</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+
     <!-- Tooling -->
     <dependency>
       <groupId>org.projectlombok</groupId>

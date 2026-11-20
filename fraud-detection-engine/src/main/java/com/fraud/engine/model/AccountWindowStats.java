@@ -1,6 +1,6 @@
 package com.fraud.engine.model;
 
-import com.fraud.common.dto.TransactionEvent;
+import com.fraud.common.dto.event.TransactionEvent;
 import java.math.BigDecimal;
 
 public record AccountWindowStats(

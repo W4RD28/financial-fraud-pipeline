@@ -18,6 +18,7 @@ public class OpenApiConfig {
             new Info()
                 .title("Fraud Audit Service API")
                 .version("1.0.0")
-                .description("Queries persisted fraud alerts and records analyst review decisions."));
+                .description(
+                    "Queries persisted fraud alerts and records analyst review decisions."));
   }
 }

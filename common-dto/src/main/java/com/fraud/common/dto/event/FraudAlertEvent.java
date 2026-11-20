@@ -1,4 +1,4 @@
-package com.fraud.common.dto;
+package com.fraud.common.dto.event;
 
 import java.math.BigDecimal;
 import java.time.Instant;

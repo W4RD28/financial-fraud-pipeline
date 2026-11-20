@@ -1,7 +1,7 @@
 package com.fraud.engine.topology;
 
-import com.fraud.common.dto.FraudAlertEvent;
-import com.fraud.common.dto.TransactionEvent;
+import com.fraud.common.dto.event.FraudAlertEvent;
+import com.fraud.common.dto.event.TransactionEvent;
 import com.fraud.engine.model.AccountWindowStats;
 import java.math.BigDecimal;
 import java.time.Duration;
