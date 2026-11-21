@@ -2,10 +2,11 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'spring-microservices'
-    metrics_path: '/actuator/prometheus'
+  - job_name: "spring-microservices"
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets:
-          - 'host.docker.internal:8081'
-          - 'host.docker.internal:8082'
-          - 'host.docker.internal:8083'
+          - "api-gateway:8080"
+          - "transaction-gateway-service:8081"
+          - "fraud-audit-service:8082"
+          - "fraud-detection-engine:8083"
